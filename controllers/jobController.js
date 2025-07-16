@@ -1,5 +1,6 @@
 import Job from "../models/job.js";
 
+//Create job
 export const createJob = async (req, res) => {
   try {
     const { title, desc, location, salary } = req.body;
@@ -26,6 +27,7 @@ export const createJob = async (req, res) => {
   }
 };
 
+//Get All Jobs
 export const getAllJobs = async (req, res) => {
   try {
     const jobs = await Job.find().populate("createdBy", "name email");
@@ -34,5 +36,61 @@ export const getAllJobs = async (req, res) => {
   } catch (error) {
     console.error("Job Fetch Error:", error);
     res.status(500).json({ message: "Server Error" });
+  }
+};
+
+//Updated a Job
+export const updateJob = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    if (job.createdBy.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this job" });
+    }
+
+    const updatedJob = await Job.findByIdAndUpdate(jobId, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      message: "Job updated successfully",
+      job: updatedJob,
+    });
+  } catch (error) {
+    console.error("Job Update Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete Job
+export const deleteJob = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    if (job.createdBy.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this job" });
+    }
+
+    await Job.findByIdAndDelete(jobId);
+
+    res.status(200).json({ message: "Job deleted successfully" });
+  } catch (error) {
+    console.error("Job Deletion Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

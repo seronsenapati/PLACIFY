@@ -6,7 +6,6 @@ import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
-import testRoutes from "./routes/test.js";
 
 dotenv.config();
 
@@ -23,7 +22,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
-app.use("/api", testRoutes);
 
 connectDB().then(() => {
   app.listen(PORT, () => {
