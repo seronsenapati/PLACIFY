@@ -1,16 +1,17 @@
-import Job from "../models/job.js";
+import Job from "../models/Job.js";
 
 //Create job
 export const createJob = async (req, res) => {
   try {
-    const { title, desc, location, salary } = req.body;
+    const { title, role, desc, location, salary } = req.body;
 
-    if (!title || !desc || !location || !salary) {
+    if (!title || !role || !desc || !location || !salary) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const newJob = await Job.create({
       title,
+      role,
       desc,
       location,
       salary,
