@@ -95,3 +95,28 @@ export const deleteJob = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+//Get Job by ID
+export const getJobById = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id).populate(
+      "createdBy",
+      "name email role"
+    );
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    res.status(200).json({ message: "Job fetched successfully", job });
+  } catch (error) {
+    console.error("Get Job By ID Error:", error);
+
+    // Handle invalid ObjectId errors
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid job ID" });
+    }
+
+    res.status(500).json({ message: "Server error" });
+  }
+};
