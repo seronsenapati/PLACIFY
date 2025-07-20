@@ -1,4 +1,5 @@
 import Job from "../models/Job.js";
+import sendResponse from "../utils/sendResponse.js";
 
 //Create job
 export const createJob = async (req, res) => {
@@ -6,7 +7,7 @@ export const createJob = async (req, res) => {
     const { title, role, desc, location, salary } = req.body;
 
     if (!title || !role || !desc || !location || !salary) {
-      return res.status(400).json({ message: "All fields are required" });
+      return sendResponse(res, 400, false, "All fields are required");
     }
 
     const newJob = await Job.create({
@@ -18,13 +19,10 @@ export const createJob = async (req, res) => {
       createdBy: req.user.id,
     });
 
-    res.status(201).json({
-      message: "Job created successfully",
-      job: newJob,
-    });
+    return sendResponse(res, 201, true, "Job created successfully", newJob);
   } catch (error) {
     console.error("Job Creation Error:", error);
-    res.status(500).json({ message: "Server error" });
+    return sendResponse(res, 500, false, "Server error");
   }
 };
 
@@ -33,10 +31,10 @@ export const getAllJobs = async (req, res) => {
   try {
     const jobs = await Job.find().populate("createdBy", "name email");
 
-    res.status(200).json({ message: "Jobs fetched successfully", jobs });
+    return sendResponse(res, 200, true, "Jobs fetched successfully", jobs);
   } catch (error) {
     console.error("Job Fetch Error:", error);
-    res.status(500).json({ message: "Server Error" });
+    return sendResponse(res, 500, false, "Server Error");
   }
 };
 
@@ -47,13 +45,11 @@ export const updateJob = async (req, res) => {
     const job = await Job.findById(jobId);
 
     if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+      return sendResponse(res, 404, false, "Job not found");
     }
 
     if (job.createdBy.toString() !== req.user.id) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to update this job" });
+      return sendResponse(res, 403, false, "Not authorized to update this job");
     }
 
     const updatedJob = await Job.findByIdAndUpdate(jobId, req.body, {
@@ -61,13 +57,10 @@ export const updateJob = async (req, res) => {
       runValidators: true,
     });
 
-    res.status(200).json({
-      message: "Job updated successfully",
-      job: updatedJob,
-    });
+    return sendResponse(res, 200, true, "Job updated successfully", updatedJob);
   } catch (error) {
     console.error("Job Update Error:", error);
-    res.status(500).json({ message: "Server error" });
+    return sendResponse(res, 500, false, "Server error");
   }
 };
 
@@ -78,21 +71,19 @@ export const deleteJob = async (req, res) => {
     const job = await Job.findById(jobId);
 
     if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+      return sendResponse(res, 404, false, "Job not found");
     }
 
     if (job.createdBy.toString() !== req.user.id) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to delete this job" });
+      return sendResponse(res, 403, false, "Not authorized to delete this job");
     }
 
     await Job.findByIdAndDelete(jobId);
 
-    res.status(200).json({ message: "Job deleted successfully" });
+    return sendResponse(res, 200, true, "Job deleted successfully");
   } catch (error) {
     console.error("Job Deletion Error:", error);
-    res.status(500).json({ message: "Server error" });
+    return sendResponse(res, 500, false, "Server error");
   }
 };
 
@@ -105,18 +96,18 @@ export const getJobById = async (req, res) => {
     );
 
     if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+      return sendResponse(res, 404, false, "Job not found");
     }
 
-    res.status(200).json({ message: "Job fetched successfully", job });
+    return sendResponse(res, 200, true, "Job fetched successfully", job);
   } catch (error) {
     console.error("Get Job By ID Error:", error);
 
     // Handle invalid ObjectId errors
     if (error.name === "CastError") {
-      return res.status(400).json({ message: "Invalid job ID" });
+      return sendResponse(res, 400, false, "Invalid job ID");
     }
 
-    res.status(500).json({ message: "Server error" });
+    return sendResponse(res, 500, false, "Server error");
   }
 };

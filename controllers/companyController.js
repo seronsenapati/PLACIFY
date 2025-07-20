@@ -1,18 +1,16 @@
-// controllers/companyController.js
 import Company from "../models/Company.js";
+import sendResponse from "../utils/sendResponse.js";
 
 // POST - Create a new company
 export const createCompany = async (req, res) => {
   try {
     if (req.user.role !== "recruiter") {
-      return res
-        .status(403)
-        .json({ message: "Only recruiters can post companies" });
+      return sendResponse(res, 403, false, "Only recruiters can post companies");
     }
     const { name, desc, website } = req.body;
 
     if (!name || !desc || !website) {
-      return res.status(400).json({ message: "All fields are required" });
+      return sendResponse(res, 400, false, "All fields are required");
     }
 
     const company = await Company.create({
@@ -21,13 +19,10 @@ export const createCompany = async (req, res) => {
       website,
     });
 
-    res.status(201).json({
-      message: "Company created successfully",
-      company,
-    });
+    return sendResponse(res, 201, true, "Company created successfully", company);
   } catch (error) {
     console.error("Company Create Error:", error);
-    res.status(500).json({ message: "Server error" });
+    return sendResponse(res, 500, false, "Server error");
   }
 };
 
@@ -38,12 +33,9 @@ export const getAllCompanies = async (req, res) => {
       .populate("jobs", "title location salary") // Populate key job fields only
       .sort({ createdAt: -1 });
 
-    res.status(200).json({
-      message: "Companies fetched successfully",
-      companies,
-    });
+    return sendResponse(res, 200, true, "Companies fetched successfully", companies);
   } catch (error) {
     console.error("Company Fetch Error:", error);
-    res.status(500).json({ message: "Server error" });
+    return sendResponse(res, 500, false, "Server error");
   }
 };

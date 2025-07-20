@@ -7,11 +7,25 @@ import {
   getJobById,
 } from "../controllers/jobController.js";
 import protect from "../middleware/authMiddleware.js";
+import { body } from "express-validator";
+import validateRequest from "../middleware/validate.js";
 
 const router = express.Router();
 
 // Create a job
-router.post("/", protect, createJob);
+router.post(
+  "/",
+  protect,
+  [
+    body("title").notEmpty().withMessage("Title is required"),
+    body("role").notEmpty().withMessage("Role is required"),
+    body("desc").notEmpty().withMessage("Description is required"),
+    body("location").notEmpty().withMessage("Location is required"),
+    body("salary").isNumeric().withMessage("Salary must be a number"),
+  ],
+  validateRequest,
+  createJob
+);
 
 // Get all jobs
 router.get("/", getAllJobs);
