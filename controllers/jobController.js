@@ -1,15 +1,33 @@
 import Job from "../models/Job.js";
 import sendResponse from "../utils/sendResponse.js";
+import validateFields from "../utils/validateFields.js";
+import { validateJobFields } from "../utils/validateAdvancedFields.js";
 
 //Create job
 export const createJob = async (req, res) => {
   try {
-    const { title, role, desc, location, salary } = req.body;
+    const { isValid, missingFields } = validateFields(
+      ["title", "role", "desc", "location", "salary"],
+      req.body
+    );
 
-    if (!title || !role || !desc || !location || !salary) {
-      return sendResponse(res, 400, false, "All fields are required");
+    if (!isValid) {
+      return sendResponse(
+        res,
+        400,
+        false,
+        `Missing required fields: ${missingFields.join(", ")}`
+      );
     }
 
+    const { role, desc, salary } = req.body;
+
+    const fieldErrors = validateJobFields({ role, desc, salary });
+    if (fieldErrors.length > 0) {
+      return sendResponse(res, 400, false, fieldErrors.join(", "));
+    }
+
+    const { title, location } = req.body;
     const newJob = await Job.create({
       title,
       role,
