@@ -74,3 +74,33 @@ export const getAllCompanies = async (req, res) => {
     return sendResponse(res, 500, false, "Server error");
   }
 };
+
+//get Company by ID
+export const getCompanyById = async (req, res) => {
+  try {
+    const company = await Company.findById(req.params.id).populate(
+      "jobs",
+      "title location salary"
+    );
+
+    if (!company) {
+      return sendResponse(res, 404, false, "Company not found");
+    }
+
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Company fetched successfully",
+      company
+    );
+  } catch (error) {
+    console.log("Company Fetch by ID Error:", error);
+
+    if (error.name === "CastError") {
+      return sendResponse(res, 400, false, "Invalid company ID");
+    }
+
+    return sendResponse(res, 500, false, "Server error");
+  }
+};

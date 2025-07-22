@@ -2,6 +2,7 @@ import express from "express";
 import {
   getAllCompanies,
   createCompany,
+  getCompanyById,
 } from "../controllers/companyController.js";
 import protect from "../middleware/authMiddleware.js";
 import { body } from "express-validator";
@@ -21,5 +22,6 @@ router.post(
   validateRequest,
   createCompany
 );
+router.get("/:id", getCompanyById);
 
 export default router;
