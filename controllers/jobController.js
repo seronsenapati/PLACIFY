@@ -138,7 +138,7 @@ export const applyToJob = async (req, res) => {
       return sendResponse(res, 403, false, "Only students can apply for jobs");
     }
 
-    const jobId = req.params.id;
+    const { jobId } = req.params;
 
     const job = await Job.findById(jobId);
     if (!job) {

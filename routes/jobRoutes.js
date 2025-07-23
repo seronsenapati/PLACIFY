@@ -41,6 +41,6 @@ router.delete("/:id", protect, deleteJob);
 router.get("/:id", getJobById);
 
 //Apply for a job
-router.post("/:id/apply", protect, applyToJob);
+router.post("/:jobId/apply", protect, applyToJob);
 
 export default router;

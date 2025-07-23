@@ -6,6 +6,6 @@ import protect from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.get("/student", protect, getStudentApplications);
-router.get("/job/:id", protect, getJobApplications);
+router.get("/job/:jobId", protect, getJobApplications);
 
 export default router;
