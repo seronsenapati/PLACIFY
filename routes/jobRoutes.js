@@ -5,6 +5,7 @@ import {
   updateJob,
   deleteJob,
   getJobById,
+  applyToJob,
 } from "../controllers/jobController.js";
 import protect from "../middleware/authMiddleware.js";
 import { body } from "express-validator";
@@ -38,5 +39,8 @@ router.delete("/:id", protect, deleteJob);
 
 //get job by ID
 router.get("/:id", getJobById);
+
+//Apply for a job
+router.post("/:id/apply", protect, applyToJob);
 
 export default router;

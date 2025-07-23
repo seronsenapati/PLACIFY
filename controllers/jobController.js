@@ -2,6 +2,7 @@ import Job from "../models/Job.js";
 import sendResponse from "../utils/sendResponse.js";
 import validateFields from "../utils/validateFields.js";
 import { validateJobFields } from "../utils/validateAdvancedFields.js";
+import Application from "../models/Application.js";
 
 //Create job
 export const createJob = async (req, res) => {
@@ -126,6 +127,52 @@ export const getJobById = async (req, res) => {
       return sendResponse(res, 400, false, "Invalid job ID");
     }
 
+    return sendResponse(res, 500, false, "Server error");
+  }
+};
+
+//Apply for a Job
+export const applyToJob = async (req, res) => {
+  try {
+    if (req.user.role !== "student") {
+      return sendResponse(res, 403, false, "Only students can apply for jobs");
+    }
+
+    const jobId = req.params.id;
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return sendResponse(res, 404, false, "Job not found");
+    }
+
+    const alreadyApplied = await Application.findOne({
+      job: jobId,
+      applicant: req.user.id,
+    });
+
+    if (alreadyApplied) {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "You have already applied to this job"
+      );
+    }
+
+    const application = await Application.create({
+      job: jobId,
+      applicant: req.user.id,
+    });
+
+    return sendResponse(
+      res,
+      201,
+      true,
+      "Application submitted successfully",
+      application
+    );
+  } catch (error) {
+    console.error("Job Application Error:", error);
     return sendResponse(res, 500, false, "Server error");
   }
 };
