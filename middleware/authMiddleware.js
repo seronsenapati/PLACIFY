@@ -17,6 +17,15 @@ const protect = (req, res, next) => {
     next();
   } catch (error) {
     console.log("JWT Error: ", error);
+    if (error.name === "TokenExpiredError") {
+      return sendResponse(
+        res,
+        401,
+        false,
+        "Session expired. Please login again."
+      );
+    }
+
     return sendResponse(res, 401, false, "Invalid or expired token");
   }
 };

@@ -48,7 +48,12 @@ export const createJob = async (req, res) => {
 //Get All Jobs
 export const getAllJobs = async (req, res) => {
   try {
-    const jobs = await Job.find().populate("createdBy", "name email");
+    if (req.user?.role === "recruiter") {
+      jobs = await Job.find({ createdBy: req.user.id }).populate(
+        "createdBy",
+        "name email"
+      );
+    }
 
     return sendResponse(res, 200, true, "Jobs fetched successfully", jobs);
   } catch (error) {

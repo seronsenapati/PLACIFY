@@ -3,11 +3,14 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 import authRoutes from "./routes/authRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +21,15 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(helmet());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: "Too many requests from this IP, please try again later",
+});
+app.use(limiter);
+
 app.get("/", (req, res) => {
   res.send("Welcome to Placify API");
 });
@@ -26,6 +38,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/applications", applicationRoutes);
+app.use("/api/users", userRoutes);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

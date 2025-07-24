@@ -1,20 +1,20 @@
 import Application from "../models/Application.js";
 import sendResponse from "../utils/sendResponse.js";
 
-export const getStudentApplications = async (req, res) => {
+export const getUserApplications = async (req, res) => {
   try {
-    if (req.user.role !== "student") {
+    const { id } = req.params;
+
+    if (req.user.id !== id && req.user.role !== "admin") {
       return sendResponse(
         res,
         403,
         false,
-        "Access denied. Only students can view their applications."
+        "You are not authorized to view these applications"
       );
     }
 
-    const applications = await Application.find({
-      applicant: req.user.id,
-    })
+    const applications = await Application.find({ applicant: id })
       .populate({
         path: "job",
         populate: {
@@ -28,14 +28,11 @@ export const getStudentApplications = async (req, res) => {
       res,
       200,
       true,
-      "Applications fetched successfully",
+      "User applications fetched successfully",
       applications
     );
   } catch (error) {
-    console.error("Fetch Student Applications Error:", error);
-    if (error.name === "CastError") {
-      return sendResponse(res, 400, false, "Invalid user ID");
-    }
+    console.error("User Applications Fetch Error:", error);
     return sendResponse(res, 500, false, "Server error");
   }
 };
