@@ -29,6 +29,18 @@ export const createJob = async (req, res) => {
     }
 
     const { title, location } = req.body;
+
+    const company = await Company.findOne({ createdBy: req.user.id });
+
+    if (!company) {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "Recruiter has not created a company yet."
+      );
+    }
+
     const newJob = await Job.create({
       title,
       role,
@@ -37,6 +49,9 @@ export const createJob = async (req, res) => {
       salary,
       createdBy: req.user.id,
     });
+    
+    company.jobs.push(newJob._id);
+    await company.save();
 
     return sendResponse(res, 201, true, "Job created successfully", newJob);
   } catch (error) {
@@ -48,17 +63,64 @@ export const createJob = async (req, res) => {
 //Get All Jobs
 export const getAllJobs = async (req, res) => {
   try {
-    if (req.user?.role === "recruiter") {
-      jobs = await Job.find({ createdBy: req.user.id }).populate(
-        "createdBy",
-        "name email"
-      );
+    const {
+      search,
+      location,
+      role,
+      minSalary,
+      maxSalary,
+      sortBy,
+      order,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const filter = {};
+
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { role: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } },
+      ];
     }
 
-    return sendResponse(res, 200, true, "Jobs fetched successfully", jobs);
+    if (location) {
+      filter.location = location;
+    }
+
+    if (role) {
+      filter.role = role;
+    }
+
+    if (minSalary || maxSalary) {
+      filter.salary = {};
+      if (minSalary) filter.salary.$gte = Number(minSalary);
+      if (maxSalary) filter.salary.$lte = Number(maxSalary);
+    }
+
+    const sortOptions = {};
+    if (sortBy) {
+      sortOptions[sortBy] = order === "asc" ? 1 : -1;
+    }
+
+    const totalJobs = await Job.countDocuments(filter);
+
+    const jobs = await Job.find(filter)
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
+    return sendResponse(res, 200, true, "Jobs fetched successfully", {
+      jobs,
+      totalJobs,
+      totalPages: Math.ceil(totalJobs / limit),
+      currentPage: Number(page),
+    });
   } catch (error) {
     console.error("Job Fetch Error:", error);
-    return sendResponse(res, 500, false, "Server Error");
+    return sendResponse(res, 500, false, "Server error");
   }
 };
 
