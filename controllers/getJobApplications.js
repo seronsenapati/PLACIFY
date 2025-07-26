@@ -5,7 +5,7 @@ import sendResponse from "../utils/sendResponse.js";
 export const getJobApplications = async (req, res) => {
   try {
     const { jobId } = req.params;
-
+   
     const job = await Job.findById(jobId);
     if (!job) {
       return sendResponse(res, 404, false, "Job not found");

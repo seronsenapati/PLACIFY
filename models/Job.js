@@ -13,7 +13,6 @@ const jobSchema = new mongoose.Schema(
     desc: {
       type: String,
       required: true,
-      unique: true,
     },
     location: {
       type: String,

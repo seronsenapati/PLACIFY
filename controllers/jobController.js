@@ -3,6 +3,8 @@ import sendResponse from "../utils/sendResponse.js";
 import validateFields from "../utils/validateFields.js";
 import { validateJobFields } from "../utils/validateAdvancedFields.js";
 import Application from "../models/Application.js";
+import Company from "../models/Company.js";
+import Notification from "../models/Notification.js";
 
 //Create job
 export const createJob = async (req, res) => {
@@ -49,7 +51,7 @@ export const createJob = async (req, res) => {
       salary,
       createdBy: req.user.id,
     });
-    
+
     company.jobs.push(newJob._id);
     await company.save();
 
@@ -229,6 +231,13 @@ export const applyToJob = async (req, res) => {
     const application = await Application.create({
       job: jobId,
       applicant: req.user.id,
+    });
+
+    const message = `New application received for ${job.title}`;
+
+    await Notification.create({
+      recipient: job.createdBy,
+      message,
     });
 
     return sendResponse(

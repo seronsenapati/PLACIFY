@@ -40,6 +40,7 @@ export const createCompany = async (req, res) => {
       name,
       desc,
       website,
+      createdBy: req.user.id,
     });
 
     return sendResponse(
